@@ -3,13 +3,55 @@ import qsimov_cloud_client as qcc
 import random as rnd
 import string
 import sympy as sp
-import unittest
+import json
+import jsonschema
+
+from jsonschema import validate
+from unittest import TestCase, main, mock
+from requests.exceptions import HTTPError
 
 
 _valid_chars = string.ascii_lowercase + string.digits
 _logger = logging.getLogger("QsimovCloudClient")
 
-class TestCloudMethods(unittest.TestCase):
+request_schema = None
+with open("schemas/request_schema.json") as f:
+    request_schema = json.load(f)
+responses = {}
+with open("schemas/response_distances_service.json") as f:
+    responses["distances_range_service"] = json.load(f)
+with open("schemas/response_extra_service.json") as f:
+    responses["extra_qubits_service"] = json.load(f)
+with open("schemas/response_total_service.json") as f:
+    responses["total_states_superposed_service"] = json.load(f)
+with open("schemas/response_circuit_service.json") as f:
+    responses["circuit_service"] = json.load(f)
+
+
+def mocked_requests_post(*args, **kwargs):
+    class MockResponse:
+        def __init__(self, json_data, status_code):
+            self.json_data = json_data
+            self.status_code = status_code
+
+        def raise_for_status(self):
+            if self.status_code // 100 != 2:
+                raise HTTPError(self.status_code)
+
+        def json(self):
+            return self.json_data
+
+    if args[0] == 'https://qcaas.qsimov.com/superpositions':
+        data = kwargs["json"]
+        validate(instance=data, schema=request_schema)
+        res = responses[data["service"]]
+        res["params"] = data
+        return MockResponse(res, 200)
+
+    return MockResponse(None, 404)
+
+
+class TestCloudMethods(TestCase):
     def setUp(self):
         self.token = ''.join(rnd.choices(_valid_chars, k=16))
         self.cli = qcc.QsimovCloudClient(self.token)
@@ -81,23 +123,23 @@ class TestCloudMethods(unittest.TestCase):
             else:
                 with self.assertLogs(_logger, level=logging.INFO) as cm:
                     self.cli.set_state(bin=bin)
-                    self.assertEqual(cm.output, ['INFO:QsimovCloudClient:state and n_qubits info overwritten'])
+                    self.assertEqual(cm.output, ['INFO:QsimovCloudClient:state and num_qubits info overwritten'])
             self.assertEqual(self.cli._data["state_bin"], bin)
             self.assertIsNone(self.cli._data["state"])
             self.assertIsNone(self.cli._data["n_qubits"])
             sta = 2**i - 1
             with self.assertLogs(_logger, level=logging.INFO) as cm:
-                self.cli.set_state(n_qubits=i, state=sta)
+                self.cli.set_state(num_qubits=i, state=sta)
                 self.assertEqual(cm.output, ['INFO:QsimovCloudClient:state bin info overwritten'])
             self.assertIsNone(self.cli._data["state_bin"])
             self.assertEqual(self.cli._data["state"], sta)
             self.assertEqual(self.cli._data["n_qubits"], i)
             with self.assertRaises(ValueError):
-                self.cli.set_state(n_qubits=i, state=-1)
+                self.cli.set_state(num_qubits=i, state=-1)
             with self.assertRaises(ValueError):
-                self.cli.set_state(n_qubits=i, state=sta+1)
+                self.cli.set_state(num_qubits=i, state=sta+1)
         with self.assertRaises(ValueError):
-            self.cli.set_state(bin=None, n_qubits=None, state=None)
+            self.cli.set_state(bin=None, num_qubits=None, state=None)
         with self.assertRaises(ValueError):
             self.cli.set_state()
 
@@ -170,5 +212,22 @@ class TestCloudMethods(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.cli.set_distances()
 
+    @mock.patch("qsimov_cloud_client.requests.post", side_effect=mocked_requests_post)
+    def test_requests(self, mock_post):
+        self.cli.set_metric("ample")
+        self.cli.set_state(bin="0110")
+        r = self.cli.calculate_distance_range()
+        self.cli.set_state(state=4, num_qubits=3)
+        r = self.cli.calculate_distance_range()
+        self.cli.set_range(r)
+        self.cli.can_have_nan(False)
+        ex = self.cli.calculate_extra_qubits()
+        ns = self.cli.calculate_num_superposed()
+        sc = self.cli.generate_circuit()
+        self.cli.can_have_nan(True)
+        ns = self.cli.calculate_num_superposed()
+        ex = self.cli.calculate_extra_qubits()
+        sc2 = self.cli.generate_circuit()
+
 if __name__ == '__main__':
-    unittest.main()
+    main()

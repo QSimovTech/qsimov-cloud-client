@@ -1,0 +1,18 @@
+{
+  "params": {
+    "service": "circuit_service",
+    "metric": "ample",
+    "state_bin": "10101010",
+    "distances": null,
+    "min_distance": "1/3",
+    "max_distance": "6/7",
+    "with_nan": true,
+    "state": 170,
+    "n_qubits": 8
+  },
+  "response": {
+    "extra_qubits": 3,
+    "total_states_superposed": 113,
+    "qasm_circuit": "OPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg main_registry[7];\nqreg auxiliary_registry[3];\nu3(1.4186954,-pi,-pi) main_registry[0];\nu3(1.6796608,2.3621675,1.6803117) auxiliary_registry[2];\nauxiliary_registry[1],auxiliary_registry[2];\nu3(0,0,-pi/4) auxiliary_registry[2];\nu3(0,-1.3854484,1.3854484) main_registry[0];\ncx main_registry[0],auxiliary_registry[2];\nu3(0,0,pi/4) auxiliary_registry[2];\ncx auxiliary_registry[1],auxiliary_registry[2];"
+  }
+}

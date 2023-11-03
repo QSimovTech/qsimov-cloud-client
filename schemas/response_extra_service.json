@@ -1,0 +1,10 @@
+{
+  "params": {
+    "service": "extra_qubits_service",
+    "metric": "ample",
+    "state_bin": "10101010"
+  },
+  "response": {
+    "extra_qubits": 3
+  }
+}

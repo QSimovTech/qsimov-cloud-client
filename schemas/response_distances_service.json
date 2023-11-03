@@ -1,0 +1,11 @@
+{
+  "params": {
+    "service": "distances_range_service",
+    "metric": "ample",
+    "state_bin": "10101010"
+  },
+  "response": {
+    "distances_range_min": "3/8",
+    "distances_range_max": "4"
+  }
+}

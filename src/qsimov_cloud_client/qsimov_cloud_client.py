@@ -14,7 +14,7 @@ _services = ["extra_qubits_service",
              "circuit_service",
              "total_states_superposed_service"]
 _ancilla_modes = ['clean', 'noancilla', 'garbage', 'borrowed', 'burnable']
-_url = "https://jkv6ys0nv6.execute-api.eu-west-1.amazonaws.com/test"
+_url = "https://qcaas.qsimov.com/superpositions"
 _logger = logging.getLogger("QsimovCloudClient")
 
 
@@ -46,15 +46,17 @@ class QsimovCloudClient(object):
             raise ValueError("unknown service")
         values = self._data.copy()
         if (service == "circuit_service"
-                or service == "total_states_superposed_service"):
+                or service == "total_states_superposed_service"
+                or service == "extra_qubits_service"):
             if self._data["with_nan"] is None:
-                raise ValueError("with_nan has to be set when using circuit "
-                                 "and total_states_superposed services")
+                raise ValueError("with_nan has to be set when using circuit, "
+                                 "extra_qubits and total_states_superposed "
+                                 "services")
             if (self._data["distances"] is None
                     and self._data["min_range"] is None):
                 raise ValueError("either distances or min/max distance have "
-                                 "to be set when using circuit and "
-                                 "total_states_superposed services")
+                                 "to be set when using circuit, extra_qubits "
+                                 "and total_states_superposed services")
             if values["distances"] is None:
                 del values["distances"]
                 values["min_range"] = str(values["min_range"])
@@ -76,10 +78,11 @@ class QsimovCloudClient(object):
             del values["state"]
             del values["n_qubits"]
         values["service"] = service
-        res = requests.post(_url,
-                            json={"body": json.dumps(values)})
+        res = requests.post(_url, json=values)
+        if res.status_code // 100 != 2:
+            _logger.error(res.json())
         res.raise_for_status()
-        return json.loads(res.json()["body"])["response"]
+        return res.json()["response"]
 
     def set_metric(self, metric):
         if not isinstance(metric, str) or metric == "":
@@ -96,26 +99,26 @@ class QsimovCloudClient(object):
             raise ValueError("invalid QASM version")
         self._data["qasm_version"] = qasm_version
 
-    def set_state(self, bin=None, n_qubits=None, state=None):
+    def set_state(self, bin=None, num_qubits=None, state=None):
         if bin is None:
-            if n_qubits is None or state is None:
-                raise ValueError("either bin or n_qubits and state have to be "
+            if num_qubits is None or state is None:
+                raise ValueError("either bin or num_qubits and state have to be "
                                  "specified")
-            if state < 0 or state >= 2**n_qubits:
+            if state < 0 or state >= 2**num_qubits:
                 raise ValueError("the state is out of range")
             if self._data["state_bin"] is not None:
                 _logger.info("state bin info overwritten")
-            self._data["n_qubits"] = n_qubits
+            self._data["n_qubits"] = num_qubits
             self._data["state"] = state
             self._data["state_bin"] = None
         else:
             if not isinstance(bin, str) or _bin_regex.match(bin) is None:
                 raise ValueError("bin is not a string of bits (0s and 1s)")
-            if n_qubits is not None or state is not None:
-                print("[WARNING] n_qubits and state parameter will be ignored "
+            if num_qubits is not None or state is not None:
+                print("[WARNING] num_qubits and state parameter will be ignored "
                       "since bin has been specified")
             if self._data["n_qubits"] is not None:
-                _logger.info("state and n_qubits info overwritten")
+                _logger.info("state and num_qubits info overwritten")
             self._data["n_qubits"] = None
             self._data["state"] = None
             self._data["state_bin"] = bin

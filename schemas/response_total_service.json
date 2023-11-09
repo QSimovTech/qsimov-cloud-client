@@ -1,0 +1,16 @@
+{
+  "params": {
+    "service": "total_states_superposed_service",
+    "metric": "ample",
+    "state_bin": "10101010",
+    "distances": null,
+    "min_distance": "1/3",
+    "max_distance": "6/7",
+    "with_nan": true,
+    "state": 170,
+    "n_qubits": 8
+  },
+  "response": {
+    "total_states_superposed": 113
+  }
+}

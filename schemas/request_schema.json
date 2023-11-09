@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "service": {
+      "type": "string",
+      "enum": [
+        "extra_qubits_service",
+        "distances_range_service",
+        "circuit_service",
+        "total_states_superposed_service"
+      ]
+    },
+    "metric": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_]+$"
+    },
+    "state_bin": {
+      "type": "string",
+      "pattern": "^[01]+$"
+    },
+    "distances": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(?:nan|inf|[0-9]+(?:\/[1-9][0-9]*)?)$"
+      }
+    },
+    "min_range": {
+      "type": "string",
+      "pattern": "^(?:nan|inf|[0-9]+(?:\/[1-9][0-9]*)?)$"
+    },
+    "max_range": {
+      "type": "string",
+      "pattern": "^(?:nan|inf|[0-9]+(?:\/[1-9][0-9]*)?)$"
+    },
+    "with_nan": {
+      "type": "boolean"
+    },
+    "state": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "n_qubits": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "token": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9]+$"
+    }
+  },
+  "required": [
+    "service",
+    "metric",
+    "token"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "state_bin"
+      ]
+    },
+    {
+      "required": [
+        "state",
+        "n_qubits"
+      ]
+    }
+  ],
+  "if": {
+    "properties": {
+      "service": {
+        "pattern": "distances_range_service"
+      }
+    }
+  },
+  "then": {
+    "not": {
+      "anyOf": [
+        {
+          "required": [
+            "distances"
+          ]
+        },
+        {
+          "required": [
+            "max_range"
+          ]
+        },
+        {
+          "required": [
+            "min_range"
+          ]
+        },
+        {
+          "required": [
+            "with_nan"
+          ]
+        }
+      ]
+    }
+  },
+  "else": {
+    "required": [
+      "with_nan"
+    ],
+    "oneOf": [
+      {
+        "required": [
+          "distances"
+        ]
+      },
+      {
+        "required": [
+          "max_range",
+          "min_range"
+        ]
+      }
+    ]
+  }
+}

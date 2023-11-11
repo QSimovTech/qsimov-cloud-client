@@ -99,11 +99,11 @@ class QsimovCloudClient(object):
             raise ValueError("invalid QASM version")
         self._data["qasm_version"] = qasm_version
 
-    def set_state(self, bin=None, num_qubits=None, state=None):
-        if bin is None:
+    def set_state(self, state_bin=None, num_qubits=None, state=None):
+        if state_bin is None:
             if num_qubits is None or state is None:
-                raise ValueError("either bin or num_qubits and state have to be "
-                                 "specified")
+                raise ValueError("either state_bin or num_qubits and state "
+                                 "have to be specified")
             if state < 0 or state >= 2**num_qubits:
                 raise ValueError("the state is out of range")
             if self._data["state_bin"] is not None:
@@ -112,25 +112,25 @@ class QsimovCloudClient(object):
             self._data["state"] = state
             self._data["state_bin"] = None
         else:
-            if not isinstance(bin, str) or _bin_regex.match(bin) is None:
-                raise ValueError("bin is not a string of bits (0s and 1s)")
+            if not isinstance(state_bin, str) or _bin_regex.match(bin) is None:
+                raise ValueError("state_bin is not a string of bits")
             if num_qubits is not None or state is not None:
-                print("[WARNING] num_qubits and state parameter will be ignored "
-                      "since bin has been specified")
+                print("[WARNING] num_qubits and state parameter will be "
+                      "ignored since state_bin has been specified")
             if self._data["n_qubits"] is not None:
                 _logger.info("state and num_qubits info overwritten")
             self._data["n_qubits"] = None
             self._data["state"] = None
-            self._data["state_bin"] = bin
+            self._data["state_bin"] = ignored
 
     def can_have_nan(self, value):
         if not isinstance(value, bool):
             raise ValueError("expected a boolean value")
         self._data["with_nan"] = value
 
-    def set_range(self, range):
-        min_range = parse_number(range[0])
-        max_range = parse_number(range[1])
+    def set_range(self, distance_range):
+        min_range = parse_number(distance_range[0])
+        max_range = parse_number(distance_range[1])
         if min_range != sp.nan and max_range != sp.nan and min_range > max_range:
             raise ValueError("min_range is greater than max_range")
         if self._data["distances"] is not None:

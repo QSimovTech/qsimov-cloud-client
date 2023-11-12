@@ -6,6 +6,7 @@ import requests
 import sympy as sp
 
 from collections.abc import Iterable
+from requests.adapters import HTTPAdapter, Retry
 
 
 _bin_regex = re.compile(r"^[01]+$")
@@ -78,11 +79,21 @@ class QsimovCloudClient(object):
             del values["state"]
             del values["n_qubits"]
         values["service"] = service
-        res = requests.post(_url, json=values)
+        res = self._post(values)
         if res.status_code // 100 != 2:
             _logger.error(res.json())
-        res.raise_for_status()
         return res.json()["response"]
+
+    def _post(self, values):
+        res = None
+        with requests.Session() as s:
+            retries = Retry(total=5,
+                            backoff_factor=0.1,
+                            status_forcelist=[ 500, 502, 503, 504 ])
+            s.mount('https://', HTTPAdapter(max_retries=3))
+            res = s.post(_url, json=values, timeout=(10, 600))
+            res.raise_for_status()
+        return res
 
     def set_metric(self, metric):
         if not isinstance(metric, str) or metric == "":
@@ -112,7 +123,7 @@ class QsimovCloudClient(object):
             self._data["state"] = state
             self._data["state_bin"] = None
         else:
-            if not isinstance(state_bin, str) or _bin_regex.match(bin) is None:
+            if not isinstance(state_bin, str) or _bin_regex.match(state_bin) is None:
                 raise ValueError("state_bin is not a string of bits")
             if num_qubits is not None or state is not None:
                 print("[WARNING] num_qubits and state parameter will be "
@@ -121,7 +132,7 @@ class QsimovCloudClient(object):
                 _logger.info("state and num_qubits info overwritten")
             self._data["n_qubits"] = None
             self._data["state"] = None
-            self._data["state_bin"] = ignored
+            self._data["state_bin"] = state_bin
 
     def can_have_nan(self, value):
         if not isinstance(value, bool):

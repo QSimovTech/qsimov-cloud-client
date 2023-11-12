@@ -115,16 +115,16 @@ class TestCloudMethods(TestCase):
     def test_set_state(self):
         isFirst = True
         for i in range(1, 9):
-            bin = ''.join(rnd.choices(['0', '1'], k=i))
+            state_bin = ''.join(rnd.choices(['0', '1'], k=i))
             if isFirst:
                 with self.assertNoLogs(_logger, level=logging.INFO) as cm:
-                    self.cli.set_state(bin=bin)
+                    self.cli.set_state(state_bin=state_bin)
                 isFirst = False
             else:
                 with self.assertLogs(_logger, level=logging.INFO) as cm:
-                    self.cli.set_state(bin=bin)
+                    self.cli.set_state(state_bin=state_bin)
                     self.assertEqual(cm.output, ['INFO:QsimovCloudClient:state and num_qubits info overwritten'])
-            self.assertEqual(self.cli._data["state_bin"], bin)
+            self.assertEqual(self.cli._data["state_bin"], state_bin)
             self.assertIsNone(self.cli._data["state"])
             self.assertIsNone(self.cli._data["n_qubits"])
             sta = 2**i - 1
@@ -139,7 +139,7 @@ class TestCloudMethods(TestCase):
             with self.assertRaises(ValueError):
                 self.cli.set_state(num_qubits=i, state=sta+1)
         with self.assertRaises(ValueError):
-            self.cli.set_state(bin=None, num_qubits=None, state=None)
+            self.cli.set_state(state_bin=None, num_qubits=None, state=None)
         with self.assertRaises(ValueError):
             self.cli.set_state()
 
@@ -212,10 +212,10 @@ class TestCloudMethods(TestCase):
         with self.assertRaises(TypeError):
             self.cli.set_distances()
 
-    @mock.patch("qsimov_cloud_client.requests.post", side_effect=mocked_requests_post)
+    @mock.patch("qsimov_cloud_client.requests.Session.post", side_effect=mocked_requests_post)
     def test_requests(self, mock_post):
         self.cli.set_metric("ample")
-        self.cli.set_state(bin="0110")
+        self.cli.set_state(state_bin="0110")
         r = self.cli.calculate_distance_range()
         self.cli.set_state(state=4, num_qubits=3)
         r = self.cli.calculate_distance_range()

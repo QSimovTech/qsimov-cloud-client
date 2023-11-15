@@ -6,9 +6,9 @@ build-backend = "hatchling.build"
 name = "qsimov-cloud-client"
 version = "0.0.1"
 authors = [
-  { name="Example Author", email="author@example.com" },
+  { name="QSimov Quantum Computing S.L.", email="tech@qsimov.com" },
 ]
-description = "A small example package"
+description = "The package to connect with the QSimov cloud services"
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
@@ -18,5 +18,5 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/pypa/sampleproject"
-"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+"Homepage" = "https://github.com/QSimovTech/qsimov-cloud-client"
+"Bug Tracker" = "https://github.com/QSimovTech/qsimov-cloud-client/issues"

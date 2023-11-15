@@ -5,6 +5,7 @@ import string
 import sympy as sp
 import json
 import jsonschema
+import os
 
 from jsonschema import validate
 from unittest import TestCase, main, mock
@@ -14,17 +15,19 @@ from requests.exceptions import HTTPError
 _valid_chars = string.ascii_lowercase + string.digits
 _logger = logging.getLogger("QsimovCloudClient")
 
+schemas_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'schemas')
+
 request_schema = None
-with open("schemas/request_schema.json") as f:
+with open(os.path.join(schemas_path, "request_schema.json")) as f:
     request_schema = json.load(f)
 responses = {}
-with open("schemas/response_distances_service.json") as f:
+with open(os.path.join(schemas_path, "response_distances_service.json")) as f:
     responses["distances_range_service"] = json.load(f)
-with open("schemas/response_extra_service.json") as f:
+with open(os.path.join(schemas_path, "response_extra_service.json")) as f:
     responses["extra_qubits_service"] = json.load(f)
-with open("schemas/response_total_service.json") as f:
+with open(os.path.join(schemas_path, "response_total_service.json")) as f:
     responses["total_states_superposed_service"] = json.load(f)
-with open("schemas/response_circuit_service.json") as f:
+with open(os.path.join(schemas_path, "response_circuit_service.json")) as f:
     responses["circuit_service"] = json.load(f)
 
 

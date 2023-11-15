@@ -5,6 +5,7 @@ import string
 import sympy as sp
 import json
 import jsonschema
+import os
 
 from jsonschema import validate
 from unittest import TestCase, main, mock
@@ -14,17 +15,19 @@ from requests.exceptions import HTTPError
 _valid_chars = string.ascii_lowercase + string.digits
 _logger = logging.getLogger("QsimovCloudClient")
 
+schemas_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'schemas')
+
 request_schema = None
-with open("schemas/request_schema.json") as f:
+with open(os.path.join(schemas_path, "request_schema.json")) as f:
     request_schema = json.load(f)
 responses = {}
-with open("schemas/response_distances_service.json") as f:
+with open(os.path.join(schemas_path, "response_distances_service.json")) as f:
     responses["distances_range_service"] = json.load(f)
-with open("schemas/response_extra_service.json") as f:
+with open(os.path.join(schemas_path, "response_extra_service.json")) as f:
     responses["extra_qubits_service"] = json.load(f)
-with open("schemas/response_total_service.json") as f:
+with open(os.path.join(schemas_path, "response_total_service.json")) as f:
     responses["total_states_superposed_service"] = json.load(f)
-with open("schemas/response_circuit_service.json") as f:
+with open(os.path.join(schemas_path, "response_circuit_service.json")) as f:
     responses["circuit_service"] = json.load(f)
 
 
@@ -115,16 +118,16 @@ class TestCloudMethods(TestCase):
     def test_set_state(self):
         isFirst = True
         for i in range(1, 9):
-            bin = ''.join(rnd.choices(['0', '1'], k=i))
+            state_bin = ''.join(rnd.choices(['0', '1'], k=i))
             if isFirst:
                 with self.assertNoLogs(_logger, level=logging.INFO) as cm:
-                    self.cli.set_state(bin=bin)
+                    self.cli.set_state(state_bin=state_bin)
                 isFirst = False
             else:
                 with self.assertLogs(_logger, level=logging.INFO) as cm:
-                    self.cli.set_state(bin=bin)
+                    self.cli.set_state(state_bin=state_bin)
                     self.assertEqual(cm.output, ['INFO:QsimovCloudClient:state and num_qubits info overwritten'])
-            self.assertEqual(self.cli._data["state_bin"], bin)
+            self.assertEqual(self.cli._data["state_bin"], state_bin)
             self.assertIsNone(self.cli._data["state"])
             self.assertIsNone(self.cli._data["n_qubits"])
             sta = 2**i - 1
@@ -139,7 +142,7 @@ class TestCloudMethods(TestCase):
             with self.assertRaises(ValueError):
                 self.cli.set_state(num_qubits=i, state=sta+1)
         with self.assertRaises(ValueError):
-            self.cli.set_state(bin=None, num_qubits=None, state=None)
+            self.cli.set_state(state_bin=None, num_qubits=None, state=None)
         with self.assertRaises(ValueError):
             self.cli.set_state()
 
@@ -212,10 +215,10 @@ class TestCloudMethods(TestCase):
         with self.assertRaises(TypeError):
             self.cli.set_distances()
 
-    @mock.patch("qsimov_cloud_client.requests.post", side_effect=mocked_requests_post)
+    @mock.patch("qsimov_cloud_client.requests.Session.post", side_effect=mocked_requests_post)
     def test_requests(self, mock_post):
         self.cli.set_metric("ample")
-        self.cli.set_state(bin="0110")
+        self.cli.set_state(state_bin="0110")
         r = self.cli.calculate_distance_range()
         self.cli.set_state(state=4, num_qubits=3)
         r = self.cli.calculate_distance_range()

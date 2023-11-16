@@ -32,6 +32,7 @@ Now that you have QsimovCloudClient installed, you can use it in your projects. 
 	client.set_metric("ample")
 	client.set_state(state_bin='0111010')
 	client.set_distances(["0", "9/4", "inf"])
+	client.can_have_nan(False)
 	client.set_ancilla_mode("clean")
 
 	# Generate a quantum circuit

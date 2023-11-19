@@ -66,6 +66,6 @@ print("The resulting circuit in qasm is:", circuit_superposition.get_qasm_code()
 
 Don't miss out on the quantum revolution! Enhance your algorithms with Neighborhood Quantum Superposition and experience the future of quantum computing today.
 
-Ready to elevate your quantum computations? [Visit](https://qsimov.com/)!
+Ready to elevate your quantum computations? [Visit QSimov](https://qsimov.com/)!
 
 🚀 **Neighborhood Quantum Superposition - Transforming Quantum Computing!** 🚀

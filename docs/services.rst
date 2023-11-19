@@ -100,7 +100,7 @@ This service calculates the minimum and maximum distance/similarity range based 
 	client.set_state(state_bin="10110")
 
 	# Calculate min and max range
-	min_range, max_range = client.calculate_extra_qubits()
+	min_range, max_range = client.calculate_distance_range()
 
 	# Access the result
 	print("The min range and max range is:", min_range, max_range)

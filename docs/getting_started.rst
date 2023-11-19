@@ -55,3 +55,4 @@ Important considerations
 - Circuits **requiring ancilla** qubits will have them in the **most significant** qubits, while the state with superposition will be in the least significant ones.
 - Any **distance argument** should be provided as **string**. If they include decimals, use fraction format (e.g., '3/2' for 1.5).
 - Using the **"noancilla"** ancilla mode may result in **exponential growth** in the number of gates within the quantum circuit. This approach is not scalable and is limited to circuits with up to 10 qubits. Consider choosing an alternative ancilla mode for larger-scale quantum computations.
+- All generated circuits will be decomposed into the **u3**, **cx**, and **cxx** gates.

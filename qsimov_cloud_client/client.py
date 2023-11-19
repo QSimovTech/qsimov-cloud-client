@@ -96,8 +96,6 @@ class QsimovCloudClient(object):
             del values["distances"]
             del values["min_range"]
             del values["max_range"]
-            del values["ancilla_mode"]
-            del values["qasm_version"]
         if values["state_bin"] is None:
             del values["state_bin"]
         else:

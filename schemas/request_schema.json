@@ -48,12 +48,28 @@
     "token": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]+$"
+    },
+    "ancilla_mode": {
+      "type": "string",
+      "enum": [
+        "clean",
+        "noancilla"
+      ]
+    },
+    "qasm_version": {
+      "type": "string",
+      "enum": [
+        "2.0",
+        "3.0"
+      ]
     }
   },
   "required": [
     "service",
     "metric",
-    "token"
+    "token",
+    "ancilla_mode",
+    "qasm_version"
   ],
   "oneOf": [
     {

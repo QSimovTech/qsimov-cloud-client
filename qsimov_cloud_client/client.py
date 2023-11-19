@@ -23,7 +23,7 @@ _logger = logging.getLogger("QsimovCloudClient")
 
 class QsimovCloudClient(object):
     """QsimovCloudClient is a Python client for interacting with the Qsimov cloud services."""
-    
+
     def __init__(self, token):
         """
         Initialize the QsimovCloudClient with a valid access token.
@@ -105,8 +105,6 @@ class QsimovCloudClient(object):
             del values["n_qubits"]
         values["service"] = service
         res = self._post(values)
-        if res.status_code // 100 != 2:
-            _logger.error(res.json())
         return res.json()["response"]
 
     def _post(self, values):
@@ -129,6 +127,8 @@ class QsimovCloudClient(object):
                             status_forcelist=[ 500, 502, 503, 504 ])
             s.mount('https://', HTTPAdapter(max_retries=3))
             res = s.post(_url, json=values, timeout=(10, 900))
+            if res.status_code // 100 != 2:
+                _logger.error(res.json())
             res.raise_for_status()
         return res
 
@@ -152,9 +152,9 @@ class QsimovCloudClient(object):
         Args:
             ancilla_mode (str): The mode for ancilla qubits.
                 It should be one of the following:
-                
+
                 - 'clean': Clean ancilla qubits mode.
-               
+
                 - 'noancilla': No ancilla qubits mode. This mode may result in exponential growth in the number of gates within the quantum circuit. This approach is not scalable and is limited to circuits with up to 10 qubits. Consider choosing an alternative ancilla mode for larger-scale quantum computations.
 
         Raises:
@@ -169,7 +169,7 @@ class QsimovCloudClient(object):
 
         Args:
             qasm_version (str): The QASM version. It should be one of the following:
-            
+
                 - '2.0': QASM version 2.0.
 
         Raises:
@@ -432,5 +432,3 @@ class SuperpositionCircuit(object):
             str: The ancilla mode.
         """
         return self._ancilla_mode
-
-

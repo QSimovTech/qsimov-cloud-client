@@ -53,7 +53,7 @@ html_context = {
   'display_github': True,
   'github_user': 'QSimovTech',
   'github_repo': 'qsimov-cloud-client',
-  'github_version': 'main/docs/'
+  'github_version': 'main'
 }
 html_sidebars = {
     "**": ["search-field", "sidebar-nav-bs"]  # remove ads
